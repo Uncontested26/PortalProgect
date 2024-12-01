@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest  # Официальный образ PostgreSQL
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: admin  # Логин пользователя
+      POSTGRES_PASSWORD: password  # Пароль пользователя
+      POSTGRES_DB: mydb  # Имя базы данных
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Хранение данных PostgreSQL
+    ports:
+      - "5432:5432"  # Проброс порта для подключения к базе данных
+
+  prometheus:
+    image: prom/prometheus:latest  # Официальный образ Prometheus
+    container_name: prometheus_container
+    restart: always
+    ports:
+      - "9090:9090"  # Проброс порта для интерфейса Prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Конфигурация Prometheus
+    depends_on:
+      - postgres  # Prometheus запускается после PostgreSQL
+
+  grafana:
+    image: grafana/grafana:latest  # Официальный образ Grafana
+    container_name: grafana_container
+    restart: always
+    ports:
+      - "3000:3000"  # Проброс порта для интерфейса Grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin  # Логин администратора Grafana
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Пароль администратора Grafana
+    volumes:
+      - grafana_data:/var/lib/grafana  # Хранение данных Grafana
+    depends_on:
+      - prometheus  # Grafana запускается после Prometheus
+
+volumes:
+  postgres_data:  # Volume для PostgreSQL
+  grafana_data:  # Volume для Grafana
+
+
